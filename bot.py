@@ -26,21 +26,15 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("❌ Enter valid 10-digit phone number")
 
-    # STEP 3: CHECK-IN
-    elif "checkin" not in context.user_data:
-        if "/" in text:
-            context.user_data["checkin"] = text
-            await update.message.reply_text("📅 Enter Check-out Date (DD/MM/YYYY)")
-        else:
-            await update.message.reply_text("❌ Use format DD/MM/YYYY")
+# STEP 3: CHECK-IN
+elif "checkin" not in context.user_data:
+    context.user_data["checkin"] = text
+    await update.message.reply_text("📅 Enter Check-out Date")
 
-    # STEP 4: CHECK-OUT
-    elif "checkout" not in context.user_data:
-        if "/" in text:
-            context.user_data["checkout"] = text
-            await update.message.reply_text("👨‍👩‍👧 Enter number of members")
-        else:
-            await update.message.reply_text("❌ Use format DD/MM/YYYY")
+# STEP 4: CHECK-OUT
+elif "checkout" not in context.user_data:
+    context.user_data["checkout"] = text
+    await update.message.reply_text("👨‍👩‍👧 Enter number of members")
 
     # STEP 5: MEMBERS
     elif "members" not in context.user_data:
