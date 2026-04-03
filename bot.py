@@ -4,7 +4,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 # START
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
-    await update.message.reply_text("🙏 Welcome to Tirupati Homestay\n\nPlease enter your Name")
+    await update.message.reply_text("🙏 Welcome to Medini Homestay\n\nPlease enter your Name")
 
 # MAIN LOGIC
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
