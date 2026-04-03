@@ -20,7 +20,10 @@ questions = [
 
 # ================= SMART RESPONSES =================
 responses = {
-    ("where", "location", "near", "tirupati"): "📍 Homestay is in Tirupati near Tirumala",
+    ("who are you", "what are you"): "🤖 I am a Homestay Booking Chatbot",
+
+    ("where", "location", "tirupati"): "📍 Homestay is in Tirupati",
+    ("tirumala", "near tirumala"): "📍 Yes, homestay is near Tirumala",
 
     ("clean",): "✨ Yes, homestay is clean",
     ("neat",): "✨ Yes, homestay is neat",
@@ -58,6 +61,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users[user_id] = {"step": 0, "data": {}}
 
     await update.message.reply_text("👋 Welcome to Homestay Booking")
+    await update.message.reply_text("🤖 I am your booking assistant")
     await update.message.reply_text("👉 Please follow steps to check availability")
     await update.message.reply_text(questions[0])
 
@@ -82,7 +86,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             if not handled:
                 await update.message.reply_text(
-                    "❌ I can't understand\n👉 Ask: location / clean / facilities / price"
+                    "❌ I can't understand\n👉 Ask: location / Tirumala / facilities / price"
                 )
             return
 
@@ -90,7 +94,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # 🚫 FORCE FIRST STEPS
         if step < 4:
-            if any(w in text for w in ["price","where","facility","clean","neat"]):
+            if any(w in text for w in ["price","where","facility","clean","neat","tirumala"]):
                 await update.message.reply_text("⚠️ Please complete booking first")
                 return
 
@@ -113,10 +117,10 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"👥 Members: {data['members']}\n"
                 f"🏠 Type: {data['type']} | {data['room']}\n\n"
                 "💰 Advance: ₹500\n"
-                "📲 GPay / PhonePe available\n"
+                "📲 Pay via GPay / PhonePe\n"
                 "📞 Contact: 8493592747\n\n"
-                "👉 After payment send screenshot\n\n"
-                "👉 Now ask: location / facilities / price"
+                "📸 Send payment screenshot after payment\n\n"
+                "👉 Now ask: location / Tirumala / facilities / price"
             )
 
     except Exception as e:
