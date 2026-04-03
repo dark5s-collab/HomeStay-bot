@@ -1,137 +1,143 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-TOKEN = "8493592743:AAEE1y83vrcPE5uDk0l5VFvRcuZ4R9q2RWE"
-
-users = {}
-
-# ================= BOOKING STEPS =================
-steps = ["name", "phone", "checkin", "checkout", "members", "type", "room"]
-
-questions = [
-    "👤 What should I call you?",
-    "📞 Enter your phone number:",
-    "📅 Enter check-in date (DD-MM-YYYY):",
-    "📅 Enter check-out date (DD-MM-YYYY):",
-    "👥 Number of members:",
-    "👪 Family or Bachelors?",
-    "🏨 AC or Non-AC?"
-]
-
-# ================= SMART RESPONSES =================
-responses = {
-    ("who are you", "what are you"): "🤖 I am a Homestay Booking Chatbot",
-
-    ("where", "location", "tirupati"): "📍 Homestay is in Tirupati",
-    ("tirumala", "near tirumala"): "📍 Yes, homestay is near Tirumala",
-
-    ("clean",): "✨ Yes, homestay is clean",
-    ("neat",): "✨ Yes, homestay is neat",
-    ("clean", "neat"): "✨ Yes, homestay is clean and neat",
-    ("room clean", "rooms clean"): "🛏️ Rooms are clean and neat",
-
-    ("kitchen",): "🍳 Yes, kitchen is available",
-
-    ("water",): "💧 RO drinking water available",
-    ("geyser",): "♨️ Geyser available",
-    ("parking",): "🚗 Car parking available",
-
-    ("facilities",): "🏠 Facilities:\n✔️ RO Water\n✔️ Geyser\n✔️ Parking\n✔️ Kitchen\n✔️ Clean & Neat Rooms",
-
-    ("1", "2", "1bhk"): "🏠 1-2 persons → 1BHK",
-    ("3", "4", "2bhk"): "🏠 3-4 persons → 2BHK",
-    ("5", "6", "3bhk"): "🏠 5-6 persons → 3BHK",
-
-    ("7", "8", "9", "10", "more"): "📞 For more members, I will connect you with agent",
-
-    ("price", "cost"): "💰 Price depends on room type"
-}
-
-# ================= SMART MATCH =================
-async def smart_reply(update, text):
-    for keys, reply in responses.items():
-        if any(word in text for word in keys):
-            await update.message.reply_text(reply)
-            return True
-    return False
-
-# ================= START =================
+# START
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_chat.id
-    users[user_id] = {"step": 0, "data": {}}
+    await update.message.reply_text(
+        "🙏 Welcome to Tirupati Homestay\n\n"
+        "Please follow steps to check availability:\n\n"
+        "1. Enter your Name\n"
+        "2. Enter Phone Number\n"
+        "3. Enter Check-in Date (DD/MM/YYYY)\n"
+        "4. Enter Check-out Date (DD/MM/YYYY)\n\n"
+        "After that you can ask about price, location, facilities."
+    )
 
-    await update.message.reply_text("👋 Welcome to Homestay Booking")
-    await update.message.reply_text("🤖 I am your booking assistant")
-    await update.message.reply_text("👉 Please follow steps to check availability")
-    await update.message.reply_text(questions[0])
+# MAIN
+async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text.lower()
 
-# ================= MAIN =================
-async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        if not update.message or not update.message.text:
-            return
+    # BASIC VALIDATION
+    if len(text) < 2:
+        await update.message.reply_text("❌ Please enter valid input")
 
-        user_id = update.effective_chat.id
-        text = update.message.text.lower().strip()
+    # NAME
+    elif text.isalpha():
+        context.user_data["name"] = text
+        await update.message.reply_text("📱 Enter your Phone Number")
 
-        if user_id not in users:
-            users[user_id] = {"step": 0, "data": {}}
+    # PHONE
+    elif text.isdigit() and len(text) == 10:
+        context.user_data["phone"] = text
+        await update.message.reply_text("📅 Enter Check-in Date (DD/MM/YYYY)")
 
-        user = users[user_id]
+    # CHECK-IN
+    elif "/" in text and "checkin" not in context.user_data:
+        context.user_data["checkin"] = text
+        await update.message.reply_text("📅 Enter Check-out Date (DD/MM/YYYY)")
 
-        # ================= AFTER BOOKING =================
-        if user["step"] >= len(steps):
+    # CHECK-OUT
+    elif "/" in text and "checkin" in context.user_data:
+        context.user_data["checkout"] = text
+        await update.message.reply_text(
+            "✅ Details received!\n\n"
+            "Now you can ask about:\n"
+            "Price, Location, Facilities, Payment"
+        )
 
-            handled = await smart_reply(update, text)
+    # LOCATION
+    elif "where" in text or "location" in text or "tirupati" in text:
+        await update.message.reply_text("📍 Homestay is in Tirupati (3-4 KM from railway station)")
 
-            if not handled:
-                await update.message.reply_text(
-                    "❌ I can't understand\n👉 Ask: location / Tirumala / facilities / price"
-                )
-            return
+    # CLEAN / NEAT
+    elif "clean" in text:
+        await update.message.reply_text("🧼 Yes, homestay is clean")
 
-        step = user["step"]
+    elif "neat" in text:
+        await update.message.reply_text("✨ Rooms are neat and well maintained")
 
-        # 🚫 FORCE FIRST STEPS
-        if step < 4:
-            if any(w in text for w in ["price","where","facility","clean","neat","tirumala"]):
-                await update.message.reply_text("⚠️ Please complete booking first")
-                return
+    # FACILITIES
+    elif "water" in text:
+        await update.message.reply_text("💧 RO Drinking Water available")
 
-        # SAVE DATA
-        user["data"][steps[step]] = text
-        user["step"] += 1
+    elif "geyser" in text or "hot water" in text:
+        await update.message.reply_text("🔥 Geyser available")
 
-        # NEXT QUESTION
-        if user["step"] < len(steps):
-            await update.message.reply_text(questions[user["step"]])
+    elif "parking" in text or "car" in text:
+        await update.message.reply_text("🚗 Car parking available")
 
-        else:
-            data = user["data"]
+    elif "kitchen" in text:
+        await update.message.reply_text("🍳 Kitchen available")
 
-            await update.message.reply_text(
-                f"✅ BOOKING COMPLETED\n\n"
-                f"👤 Name: {data['name']}\n"
-                f"📞 Phone: {data['phone']}\n"
-                f"📅 Stay: {data['checkin']} → {data['checkout']}\n"
-                f"👥 Members: {data['members']}\n"
-                f"🏠 Type: {data['type']} | {data['room']}\n\n"
-                "💰 Advance: ₹500\n"
-                "📲 Pay via GPay / PhonePe\n"
-                "📞 Contact: 8493592747\n\n"
-                "📸 Send payment screenshot after payment\n\n"
-                "👉 Now ask: location / Tirumala / facilities / price"
-            )
+    # WIFI / ELECTRICITY
+    elif "wifi" in text:
+        await update.message.reply_text("📶 WiFi not available")
 
-    except Exception as e:
-        print("ERROR:", e)
-        await update.message.reply_text("⚠️ Error but bot still running")
+    elif "electricity" in text or "power" in text:
+        await update.message.reply_text("⚡ 24/7 electricity available")
 
-# ================= RUN =================
-app = ApplicationBuilder().token(TOKEN).build()
+    # FOOD
+    elif "food" in text:
+        await update.message.reply_text("🍽️ Food not provided, kitchen available")
+
+    # DISTANCE
+    elif "distance" in text or "far" in text:
+        await update.message.reply_text("📍 3-4 KM from Tirupati railway station")
+
+    # SAFETY
+    elif "safe" in text:
+        await update.message.reply_text("🔒 100% safe for family")
+
+    # PETS
+    elif "pet" in text:
+        await update.message.reply_text("❌ Pets not allowed")
+
+    # LIFT
+    elif "lift" in text:
+        await update.message.reply_text("❌ Lift not available")
+
+    # DISCOUNT
+    elif "discount" in text:
+        await update.message.reply_text("💸 Discount available for longer stay")
+
+    # REFUND
+    elif "refund" in text or "cancel" in text:
+        await update.message.reply_text("❌ Advance is non-refundable")
+
+    # ID
+    elif "id" in text:
+        await update.message.reply_text("🪪 ID proof not required")
+
+    # TIME
+    elif "time" in text or "check" in text:
+        await update.message.reply_text("⏰ 24 hours check-in/check-out")
+
+    # PHOTOS
+    elif "photo" in text:
+        await update.message.reply_text("📸 We will send photos within 5 minutes")
+
+    # PAYMENT
+    elif "payment" in text or "price" in text or "pay" in text:
+        await update.message.reply_text(
+            "💰 Payment Details:\n"
+            "Advance: ₹500\n"
+            "Pay via PhonePe / GPay\n"
+            "📞 8493592747\n\n"
+            "Remaining amount can be paid after reaching"
+        )
+
+    # DEFAULT (IMPORTANT)
+    else:
+        await update.message.reply_text(
+            "🤖 I didn't understand.\n\n"
+            "Please ask about:\n"
+            "Location, Price, Facilities, Payment"
+        )
+
+# RUN
+app = ApplicationBuilder().token("8493592743:AAEE1y83vrcPE5uDk0l5VFvRcuZ4R9q2RWE").build()
 
 app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle))
+app.add_handler(MessageHandler(filters.TEXT, reply))
 
-print("🚀 FINAL BOT RUNNING")
 app.run_polling()
