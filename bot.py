@@ -104,7 +104,13 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif "clean" in text or "neat" in text:
             await update.message.reply_text("🧼 Rooms are clean and neat")
 
+        elif "price" in text or "cost" in text:
+            await update.message.reply_text("our agent will tell you soon because it is based on availability")
+
         elif "wifi" in text:
+            await update.message.reply_text("📶 WiFi not available")
+
+        elif "1bhk" in text or "2bhk" in text or "3bhk" in text:
             await update.message.reply_text("📶 WiFi not available")
 
         elif "food" in text:
@@ -137,7 +143,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif "photo" in text:
             await update.message.reply_text("📸 Photos will be sent in 5 minutes")
 
-        elif "payment" in text or "price" in text:
+        elif "payment" in text or "booking" in text or "book" in text:
             await update.message.reply_text(
                 "💰 Advance ₹500\n📞 8493592747\nPay via GPay / PhonePe"
             )
