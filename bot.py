@@ -1,12 +1,20 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-# START
+# ====== CONFIG ======
+BOT_TOKEN = "8493592743:AAF4br9f4MhKsTqBvs8GE8GN2xkmSSRwLSU"
+OWNER_ID = 6681431665
+
+BOOKINGS = []
+
+# ====== START ======
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
-    await update.message.reply_text("🙏 Welcome to Medini Homestay\n\nPlease enter your Name")
+    await update.message.reply_text(
+        "🙏 Welcome to MEDINI HOME STAY\n\nPlease enter your Name"
+    )
 
-# MAIN LOGIC
+# ====== MAIN ======
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
 
@@ -22,19 +30,19 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif "phone" not in context.user_data:
         if text.isdigit() and len(text) == 10:
             context.user_data["phone"] = text
-            await update.message.reply_text("📅 Enter Check-in Date (DD/MM/YYYY)")
+            await update.message.reply_text("📅 Enter Check-in Date")
         else:
             await update.message.reply_text("❌ Enter valid 10-digit phone number")
 
-# STEP 3: CHECK-IN
-elif "checkin" not in context.user_data:
-    context.user_data["checkin"] = text
-    await update.message.reply_text("📅 Enter Check-out Date")
+    # STEP 3: CHECK-IN (NO FORMAT)
+    elif "checkin" not in context.user_data:
+        context.user_data["checkin"] = text
+        await update.message.reply_text("📅 Enter Check-out Date")
 
-# STEP 4: CHECK-OUT
-elif "checkout" not in context.user_data:
-    context.user_data["checkout"] = text
-    await update.message.reply_text("👨‍👩‍👧 Enter number of members")
+    # STEP 4: CHECK-OUT
+    elif "checkout" not in context.user_data:
+        context.user_data["checkout"] = text
+        await update.message.reply_text("👥 Enter number of members")
 
     # STEP 5: MEMBERS
     elif "members" not in context.user_data:
@@ -57,39 +65,39 @@ elif "checkout" not in context.user_data:
         if "yes" in text or "no" in text:
             context.user_data["ac"] = text
 
-            # FINAL RESPONSE
-            await update.message.reply_text(
-                "✅ Booking Details Received!\n\n"
-                f"👤 Name: {context.user_data['name']}\n"
-                f"📱 Phone: {context.user_data['phone']}\n"
-                f"📅 Check-in: {context.user_data['checkin']}\n"
-                f"📅 Check-out: {context.user_data['checkout']}\n"
-                f"👥 Members: {context.user_data['members']}\n"
-                f"🏠 Type: {context.user_data['type']}\n"
-                f"❄️ AC: {context.user_data['ac']}\n\n"
-                
-                "📍 Location: Tirupati (3-4 KM from railway station)\n"
-                "🧼 Clean & Neat Rooms\n"
-                "💧 RO Water Available\n"
-                "🔥 Geyser Available\n"
-                "🚗 Parking Available\n"
-                "🍳 Kitchen Available\n"
-                "⚡ 24/7 Electricity\n"
-                "🔒 Safe for Family\n\n"
-                
-                "💰 Payment:\n"
-                "Advance: ₹500\n"
-                "📞 8493592747 (PhonePe / GPay)\n"
-                "Remaining pay after reaching"
+            data = context.user_data
+
+            # SAVE BOOKING
+            BOOKINGS.append(data.copy())
+
+            # NOTIFY OWNER
+            await context.bot.send_message(
+                chat_id=OWNER_ID,
+                text=(
+                    "🔥 NEW BOOKING!\n\n"
+                    f"👤 Name: {data['name']}\n"
+                    f"📱 Phone: {data['phone']}\n"
+                    f"📅 {data['checkin']} → {data['checkout']}\n"
+                    f"👥 Members: {data['members']}\n"
+                    f"👪 Type: {data['type']}\n"
+                    f"❄️ AC: {data['ac']}"
+                )
             )
 
+            # CUSTOMER RESPONSE
+            await update.message.reply_text(
+                "✅ Booking Confirmed!\n\n"
+                "💰 Advance: ₹500\n"
+                "📞 8493592747\n"
+                "Pay via PhonePe / GPay\n\n"
+                "📍 Tirupati (3-4 KM)\n"
+                "🧼 Clean Rooms | 🚗 Parking | ⚡ 24/7 Power"
+            )
         else:
             await update.message.reply_text("❌ Answer yes or no")
 
-    # AFTER FLOW → QUESTIONS
+    # ===== AFTER FLOW =====
     else:
-
-        # LOCATION
         if "location" in text or "where" in text:
             await update.message.reply_text("📍 Tirupati (3-4 KM from railway station)")
 
@@ -137,10 +145,28 @@ elif "checkout" not in context.user_data:
         else:
             await update.message.reply_text("🤖 I didn't understand, please ask clearly")
 
-# RUN
-app = ApplicationBuilder().token("8493592743:AAEE1y83vrcPE5uDk0l5VFvRcuZ4R9q2RWE").build()
+# ===== /DATA COMMAND =====
+async def data(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("❌ Not authorized")
+        return
+
+    if not BOOKINGS:
+        await update.message.reply_text("No bookings yet")
+        return
+
+    msg = "📊 BOOKINGS:\n\n"
+    for i, b in enumerate(BOOKINGS, 1):
+        msg += f"{i}. {b['name']} - {b['phone']} ({b['members']} people)\n"
+
+    await update.message.reply_text(msg)
+
+# ===== RUN =====
+app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT, reply))
+app.add_handler(CommandHandler("data", data))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))
 
+print("🚀 BOT LIVE...")
 app.run_polling()
