@@ -90,7 +90,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "💰 Advance: ₹500\n"
                 "📞 8493592747\n"
                 "Pay via PhonePe / GPay\n\n"
-                "📍 Tirupati (3-4 KM)\n"
+                "📍 Tirupati (3-4 KM) from railway station\n"
                 "🧼 Clean Rooms | 🚗 Parking | ⚡ 24/7 Power"
             )
         else:
@@ -115,6 +115,9 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         elif "food" in text:
             await update.message.reply_text("🍽️ Food not provided, kitchen available")
+
+        elif "geyser" in text:
+            await update.message.reply_text("yes the geyser is available")
 
         elif "parking" in text:
             await update.message.reply_text("🚗 Parking available")
