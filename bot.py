@@ -1,8 +1,8 @@
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
 # ====== CONFIG ======
-BOT_TOKEN = "8493592743:AAF4br9f4MhKsTqBvs8GE8GN2xkmSSRwLSU"
+BOT_TOKEN = "YOUR_BOT_TOKEN"
 OWNER_ID = 6681431665
 
 BOOKINGS = []
@@ -13,6 +13,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🙏 Welcome to MEDINI HOME STAY\n\nPlease enter your Name"
     )
+
+# ====== BUTTON HANDLER ======
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data.startswith("confirm_"):
+        booking_id = query.data.split("_")[1]
+        await query.edit_message_text(f"✅ Booking {booking_id} Confirmed")
+
+    elif query.data.startswith("cancel_"):
+        booking_id = query.data.split("_")[1]
+        await query.edit_message_text(f"❌ Booking {booking_id} Cancelled")
+
+    elif query.data.startswith("call_"):
+        phone = query.data.split("_")[1]
+        await query.answer(f"📞 {phone}", show_alert=True)
 
 # ====== MAIN ======
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -34,7 +51,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("❌ Enter valid 10-digit phone number")
 
-    # STEP 3: CHECK-IN (NO FORMAT)
+    # STEP 3: CHECK-IN
     elif "checkin" not in context.user_data:
         context.user_data["checkin"] = text
         await update.message.reply_text("📅 Enter Check-out Date")
@@ -60,113 +77,104 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("❌ Type Family or Bachelors")
 
-    # STEP 7: AC
+    # STEP 7: AC (FINAL)
     elif "ac" not in context.user_data:
         if "yes" in text or "no" in text:
             context.user_data["ac"] = text
 
             data = context.user_data
 
-            # SAVE BOOKING
+            # BOOKING ID
+            booking_id = len(BOOKINGS) + 1
+            data["id"] = booking_id
+
             BOOKINGS.append(data.copy())
 
-            # NOTIFY OWNER
+            # 🔘 BUTTONS
+            keyboard = [
+                [
+                    InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{booking_id}"),
+                    InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{booking_id}")
+                ],
+                [
+                    InlineKeyboardButton("📞 Call", callback_data=f"call_{data['phone']}")
+                ]
+            ]
+
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
+            # 🔔 OWNER NOTIFICATION
             await context.bot.send_message(
                 chat_id=OWNER_ID,
                 text=(
-                    "🔥 NEW BOOKING!\n\n"
-                    f"👤 Name: {data['name']}\n"
-                    f"📱 Phone: {data['phone']}\n"
+                    "🚨🚨 NEW BOOKING ALERT 🚨🚨\n\n"
+                    f"🆔 ID: {data['id']}\n"
+                    f"👤 {data['name']}\n"
+                    f"📱 {data['phone']}\n"
                     f"📅 {data['checkin']} → {data['checkout']}\n"
-                    f"👥 Members: {data['members']}\n"
-                    f"👪 Type: {data['type']}\n"
-                    f"❄️ AC: {data['ac']}"
-                )
+                    f"👥 {data['members']} Members\n"
+                    f"👪 {data['type']}\n"
+                    f"❄️ AC: {data['ac']}\n\n"
+                    "⚠️ Choose action 👇"
+                ),
+                reply_markup=reply_markup,
+                disable_notification=False
             )
 
             # CUSTOMER RESPONSE
             await update.message.reply_text(
-                "✅ Booking Confirmed!\n\n"
-                "💰 Advance: ₹500\n"
-                "📞 8493592747\n"
-                "Pay via PhonePe / GPay\n\n"
-                "📍 Tirupati (3-4 KM) from railway station\n"
-                "🧼 Clean Rooms | 🚗 Parking | ⚡ 24/7 Power"
+                "✅ Booking Request Received!\n"
+                "🔒 Safe & Trusted Stay\n\n"
+
+                f"🆔 ID: {data['id']}\n"
+                f"📅 {data['checkin']} → {data['checkout']}\n"
+                f"👥 {data['members']} Members\n"
+                f"❄️ AC: {data['ac']}\n\n"
+
+                "🏡 FACILITIES:\n"
+                "🧼 Clean Rooms\n"
+                "💧 RO Water\n"
+                "🔥 24/7 Hot Water (Geyser)\n"
+                "🚗 Parking\n"
+                "⚡ 24/7 Power\n\n"
+
+                "📍 Tirupati (3-4 KM from railway station)\n\n"
+
+                "⚠️ Limited rooms available\n\n"
+
+                "💰 BOOKING:\n"
+                "Advance ₹500\n\n"
+
+                "📲 PAYMENT:\n"
+                "GPay / PhonePe: 8493592747\n\n"
+
+                "📸 Photos will be sent in 5 minutes"
             )
         else:
             await update.message.reply_text("❌ Answer yes or no")
 
     # ===== AFTER FLOW =====
     else:
-        if "location" in text or "where" in text:
-            await update.message.reply_text("📍 Tirupati (3-4 KM from railway station)")
+        if "geyser" in text:
+            await update.message.reply_text("🔥 24/7 hot water available")
 
-        elif "clean" in text or "neat" in text:
-            await update.message.reply_text("🧼 Rooms are clean and neat")
-
-        elif "price" in text or "cost" in text:
-            await update.message.reply_text("our agent will tell you soon because it is based on availability")
-
-        elif "wifi" in text:
-            await update.message.reply_text("📶 WiFi not available")
-
-        elif "1bhk" in text or "2bhk" in text or "3bhk" in text:
-            await update.message.reply_text("📶 WiFi not available")
-
-        elif "food" in text:
-            await update.message.reply_text("🍽️ Food not provided, kitchen available")
-
-        elif "geyser" in text:
-            await update.message.reply_text("yes the geyser is available")
-
-        elif "parking" in text:
-            await update.message.reply_text("🚗 Parking available")
-
-        elif "water" in text:
-            await update.message.reply_text("💧 RO water available")
-
-        elif "safe" in text:
-            await update.message.reply_text("🔒 100% safe")
-
-        elif "pet" in text:
-            await update.message.reply_text("❌ Pets not allowed")
-
-        elif "lift" in text:
-            await update.message.reply_text("❌ Lift not available")
-
-        elif "discount" in text:
-            await update.message.reply_text("💸 Discount available for long stay")
-
-        elif "refund" in text:
-            await update.message.reply_text("❌ No refund on advance")
-
-        elif "time" in text:
-            await update.message.reply_text("⏰ 24 hours check-in/check-out")
-
-        elif "photo" in text:
-            await update.message.reply_text("📸 Photos will be sent in 5 minutes")
-
-        elif "payment" in text or "booking" in text or "book" in text:
+        elif "payment" in text or "book" in text:
             await update.message.reply_text(
-                "💰 Advance ₹500\n📞 8493592747\nPay via GPay / PhonePe"
+                "💰 Advance ₹500\n📞 8493592747\nGPay / PhonePe"
             )
 
         else:
-            await update.message.reply_text("🤖 I didn't understand, please ask clearly")
+            await update.message.reply_text("🤖 Ask clearly")
 
-# ===== /DATA COMMAND =====
+# ===== /DATA =====
 async def data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != OWNER_ID:
         await update.message.reply_text("❌ Not authorized")
         return
 
-    if not BOOKINGS:
-        await update.message.reply_text("No bookings yet")
-        return
-
     msg = "📊 BOOKINGS:\n\n"
     for i, b in enumerate(BOOKINGS, 1):
-        msg += f"{i}. {b['name']} - {b['phone']} ({b['members']} people)\n"
+        msg += f"{i}. ID:{b['id']} | {b['name']} | {b['phone']} | AC:{b['ac']}\n"
 
     await update.message.reply_text(msg)
 
@@ -175,6 +183,7 @@ app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("data", data))
+app.add_handler(CallbackQueryHandler(button_handler))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))
 
 print("🚀 BOT LIVE...")
