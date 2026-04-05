@@ -146,25 +146,74 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "Advance ₹500\n\n"
 
                 "📲 PAYMENT:\n"
-                "GPay / PhonePe: 8493592747\n\n"
-
-                "📸 Photos will be sent in 5 minutes"
+                "GPay / PhonePe
             )
         else:
             await update.message.reply_text("❌ Answer yes or no")
 
     # ===== AFTER FLOW =====
+    # ===== AFTER FLOW =====
+else:
+    if "location" in text or "where" in text:
+        await update.message.reply_text("📍 Tirupati (3-4 KM from railway station)")
+
+    elif "price" in text or "cost" in text:
+        await update.message.reply_text("💰 Price depends on availability, our agent will inform you soon")
+
+    elif "clean" in text or "neat" in text:
+        await update.message.reply_text("🧼 Rooms are very clean and hygienic")
+
+    elif "room" in text:
+        await update.message.reply_text("🏡 Spacious rooms available for family and bachelors")
+
+    elif "geyser" in text:
+        await update.message.reply_text("🔥 24/7 hot water available")
+
+    elif "parking" in text:
+        await update.message.reply_text("🚗 Parking available")
+
+    elif "water" in text:
+        await update.message.reply_text("💧 RO drinking water available")
+
+    elif "safe" in text:
+        await update.message.reply_text("🔒 100% safe and secure stay")
+
+    elif "food" in text:
+        await update.message.reply_text("🍽️ Food not provided, kitchen available")
+
+    elif "payment" in text or "book" in text:
+        await update.message.reply_text(
+            "💰 Advance ₹500\n📞 8493592747\nGPay / PhonePe"
+        )
+
+    # 🔥 UPDATED EXTRA QUESTIONS
+
+    elif "wifi" in text or "internet" in text:
+        await update.message.reply_text("📶 WiFi currently not available")
+
+    elif "ac" in text:
+        await update.message.reply_text("❄️ AC rooms available on request")
+
+    elif "time" in text or "check" in text:
+        await update.message.reply_text("⏰ 24 hours check-in & check-out available")
+
+    elif "advance" in text:
+        await update.message.reply_text("💰 Advance ₹500 required to confirm booking")
+
+    elif "cancel" in text:
+        await update.message.reply_text("❌ Advance is non-refundable")
+
+    elif "photo" in text or "pics" in text:
+        await update.message.reply_text("📸 Room photos will be shared shortly")
+
+    elif "distance" in text:
+        await update.message.reply_text("📍 3-4 KM from Tirupati railway station")
+
+    elif "contact" in text:
+        await update.message.reply_text("📞 Call/WhatsApp: 8121451238")
+
     else:
-        if "geyser" in text:
-            await update.message.reply_text("🔥 24/7 hot water available")
-
-        elif "payment" in text or "book" in text:
-            await update.message.reply_text(
-                "💰 Advance ₹500\n📞 8493592747\nGPay / PhonePe"
-            )
-
-        else:
-            await update.message.reply_text("🤖 Ask clearly")
+        await update.message.reply_text("🤖 Please ask like: price, location, rooms, booking")
 
 # ===== /DATA =====
 async def data(update: Update, context: ContextTypes.DEFAULT_TYPE):
