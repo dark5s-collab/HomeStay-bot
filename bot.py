@@ -143,6 +143,8 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         if "location" in text or "where" in text:
             await update.message.reply_text("📍 Tirupati (3-4 KM from railway station)")
+        elif "price" in text or "cost" or "rate" in text:
+            await update.message.reply_text("📍 Tirupati (3-4 KM from railway station)")
         elif "near tirumala" in text:
             await update.message.reply_text("Yes, very close to Tirumala")
         elif "quiet area" in text:
