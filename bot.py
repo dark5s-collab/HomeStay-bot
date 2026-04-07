@@ -77,7 +77,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("❌ Type Family or Bachelors")
 
     # STEP 7: AC
-   elif "ac" not in context.user_data:
+elif "ac" not in context.user_data:
     if "yes" in text or "no" in text:
         context.user_data["ac"] = text
 
@@ -120,7 +120,6 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     else:
         await update.message.reply_text("❌ Answer yes or no")
-
     # ===== AFTER FLOW =====
     else:
         if "location" in text or "where" in text:
