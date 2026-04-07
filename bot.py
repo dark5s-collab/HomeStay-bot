@@ -77,64 +77,49 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("❌ Type Family or Bachelors")
 
     # STEP 7: AC
-    elif "ac" not in context.user_data:
-        if "yes" in text or "no" in text:
-            context.user_data["ac"] = text
+   elif "ac" not in context.user_data:
+    if "yes" in text or "no" in text:
+        context.user_data["ac"] = text
 
-            data = context.user_data
-            booking_id = len(BOOKINGS) + 1
-            data["id"] = booking_id
-            BOOKINGS.append(data.copy())
+        data = context.user_data
+        booking_id = len(BOOKINGS) + 1
+        data["id"] = booking_id
+        BOOKINGS.append(data.copy())
 
-            keyboard = [
-                [
-                    InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{booking_id}"),
-                    InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{booking_id}")
-                ],
-                [
-                    InlineKeyboardButton("📞 Call", callback_data="call_owner")
-                ]
+        keyboard = [
+            [
+                InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{booking_id}"),
+                InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{booking_id}")
+            ],
+            [
+                InlineKeyboardButton("📞 Call", callback_data="call_owner")
             ]
+        ]
 
-            reply_markup = InlineKeyboardMarkup(keyboard)
+        reply_markup = InlineKeyboardMarkup(keyboard)
 
-            await context.bot.send_message(
-                chat_id=OWNER_ID,
-                text=(
-                    "🚨🚨 NEW BOOKING ALERT 🚨🚨\n\n"
-                    f"🆔 ID: {data['id']}\n"
-                    f"👤 {data['name']}\n"
-                    f"📅 {data['checkin']} → {data['checkout']}\n"
-                    f"👥 {data['members']} Members\n"
-                    f"👪 {data['type']}\n"
-                    f"❄️ AC: {data['ac']}\n\n"
-                    "⚠️ Choose action 👇"
-                ),
-                reply_markup=reply_markup
-            )
-
-            await update.message.reply_text(
-                "✅ Booking Request Received!\n"
-                "🔒 Safe & Trusted Stay\n\n"
+        await context.bot.send_message(
+            chat_id=OWNER_ID,
+            text=(
+                "🚨🚨 NEW BOOKING ALERT 🚨🚨\n\n"
                 f"🆔 ID: {data['id']}\n"
+                f"👤 {data['name']}\n"
                 f"📅 {data['checkin']} → {data['checkout']}\n"
                 f"👥 {data['members']} Members\n"
+                f"👪 {data['type']}\n"
                 f"❄️ AC: {data['ac']}\n\n"
-                "🏡 FACILITIES:\n"
-                "🧼 Clean Rooms\n"
-                "💧 RO Water\n"
-                "🔥 24/7 Hot Water (Geyser)\n"
-                "🚗 Parking\n"
-                "⚡ 24/7 Power\n\n"
-                "📍 Tirupati (3-4 KM from railway station)\n\n"
-                "⚠️ Limited rooms available\n\n"
-                "💰 BOOKING:\n"
-                "Advance ₹1000\n\n"
-                "📲 PAYMENT:\n"
-                "GPay / PhonePe / Cash"
-            )
-        else:
-            await update.message.reply_text("❌ Answer yes or no")
+                "⚠️ Choose action 👇"
+            ),
+            reply_markup=reply_markup
+        )
+
+        await update.message.reply_text(
+            "✅ Booking Request Received!\n"
+            f"🆔 ID: {data['id']}\n"
+        )
+
+    else:
+        await update.message.reply_text("❌ Answer yes or no")
 
     # ===== AFTER FLOW =====
     else:
