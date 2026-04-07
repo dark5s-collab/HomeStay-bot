@@ -2,7 +2,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
 # ====== CONFIG ======
-BOT_TOKEN = "8659430531:AAFzI_6equMZe89CL_Pe-3LpQOUGyzd2cA4"
+BOT_TOKEN = "8493592743:AAF4br9f4MhKsTqBvs8GE8GN2xkmSSRwLSU"
 OWNER_ID = 8493592743
 
 BOOKINGS = []
