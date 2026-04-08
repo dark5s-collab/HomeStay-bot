@@ -34,85 +34,91 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower().strip()
 
-    if "name" not in context.user_data and "done" not in context.user_data:
-        if len(text) < 3:
-            await update.message.reply_text("❌ Enter valid name")
-        else:
-            context.user_data["name"] = text
-            await update.message.reply_text("📱 Enter your Phone Number")
+    # ===== BOOKING FLOW =====
+    if "done" not in context.user_data:
 
-    elif "phone" not in context.user_data:
-        if text.isdigit() and len(text) == 10:
-            context.user_data["phone"] = text
-            await update.message.reply_text("📅 Enter Check-in Date")
-        else:
-            await update.message.reply_text("❌ Enter valid 10-digit phone number")
+        if "name" not in context.user_data:
+            if len(text) < 3:
+                await update.message.reply_text("❌ Enter valid name")
+            else:
+                context.user_data["name"] = text
+                await update.message.reply_text("📱 Enter your Phone Number")
 
-    elif "checkin" not in context.user_data:
-        context.user_data["checkin"] = text
-        await update.message.reply_text("📅 Enter Check-out Date")
+        elif "phone" not in context.user_data:
+            if text.isdigit() and len(text) == 10:
+                context.user_data["phone"] = text
+                await update.message.reply_text("📅 Enter Check-in Date")
+            else:
+                await update.message.reply_text("❌ Enter valid 10-digit phone number")
 
-    elif "checkout" not in context.user_data:
-        context.user_data["checkout"] = text
-        await update.message.reply_text("👥 Enter number of members")
+        elif "checkin" not in context.user_data:
+            context.user_data["checkin"] = text
+            await update.message.reply_text("📅 Enter Check-out Date")
 
-    elif "members" not in context.user_data:
-        if text.isdigit():
-            context.user_data["members"] = text
-            await update.message.reply_text("👨‍👩‍👧‍👦 Family or Bachelors?")
-        else:
-            await update.message.reply_text("❌ Enter number only")
+        elif "checkout" not in context.user_data:
+            context.user_data["checkout"] = text
+            await update.message.reply_text("👥 Enter number of members")
 
-    elif "type" not in context.user_data:
-        if "family" in text or "bachelor" in text:
-            context.user_data["type"] = text
-            await update.message.reply_text("❄️ Do you want AC room? (yes/no)")
-        else:
-            await update.message.reply_text("❌ Type Family or Bachelors")
+        elif "members" not in context.user_data:
+            if text.isdigit():
+                context.user_data["members"] = text
+                await update.message.reply_text("👨‍👩‍👧‍👦 Family or Bachelors?")
+            else:
+                await update.message.reply_text("❌ Enter number only")
 
-    elif "ac" not in context.user_data:
-        if text in ["yes", "no", "y", "n"]:
-            context.user_data["ac"] = "yes" if text in ["yes", "y"] else "no"
+        elif "type" not in context.user_data:
+            if "family" in text or "bachelor" in text:
+                context.user_data["type"] = text
+                await update.message.reply_text("❄️ Do you want AC room? (yes/no)")
+            else:
+                await update.message.reply_text("❌ Type Family or Bachelors")
 
-            data = context.user_data
-            booking_id = len(BOOKINGS) + 1
-            data["id"] = booking_id
-            BOOKINGS.append(data.copy())
+        elif "ac" not in context.user_data:
+            if text in ["yes", "no", "y", "n"]:
+                context.user_data["ac"] = "yes" if text in ["yes", "y"] else "no"
 
-            keyboard = [
-                [
-                    InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{booking_id}"),
-                    InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{booking_id}")
-                ],
-                [
-                    InlineKeyboardButton("📞 Call", callback_data="call_owner")
+                data = context.user_data
+                booking_id = len(BOOKINGS) + 1
+                data["id"] = booking_id
+                BOOKINGS.append(data.copy())
+
+                keyboard = [
+                    [
+                        InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{booking_id}"),
+                        InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{booking_id}")
+                    ],
+                    [
+                        InlineKeyboardButton("📞 Call", callback_data="call_owner")
+                    ]
                 ]
-            ]
 
-            reply_markup = InlineKeyboardMarkup(keyboard)
+                reply_markup = InlineKeyboardMarkup(keyboard)
 
-            await context.bot.send_message(
-                chat_id=OWNER_ID,
-                text=(
-                    "🚨 NEW BOOKING\n\n"
-                    f"ID: {data['id']}\n"
-                    f"{data['name']}\n"
-                    f"{data['checkin']} → {data['checkout']}\n"
-                    f"{data['members']} Members\n"
-                    f"{data['type']}\n"
-                    f"AC: {data['ac']}"
-                ),
-                reply_markup=reply_markup
-            )
+                await context.bot.send_message(
+                    chat_id=OWNER_ID,
+                    text=(
+                        "🚨 NEW BOOKING\n\n"
+                        f"ID: {data['id']}\n"
+                        f"Name: {data['name']}\n"
+                        f"Phone: {data['phone']}\n"
+                        f"{data['checkin']} → {data['checkout']}\n"
+                        f"{data['members']} Members\n"
+                        f"{data['type']}\n"
+                        f"AC: {data['ac']}"
+                    ),
+                    reply_markup=reply_markup
+                )
 
-            await update.message.reply_text("✅ Booking sent successfully")
-context.user_data["done"] = True   # ✅ HERE
+                await update.message.reply_text("✅ Booking sent successfully")
 
-        else:
-            await update.message.reply_text("❌ Answer yes or no")
+                context.user_data["done"] = True
 
-    # ===== AFTER FLOW =====
+            else:
+                await update.message.reply_text("❌ Answer yes or no")
+
+    # ===== ALL YOUR ELIFS (UNCHANGED BUT FIXED POSITION) =====
     else:
+
         if "location" in text:
             await update.message.reply_text("📍 Tirupati (3-4 KM from railway station)")
 
