@@ -3,7 +3,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Cal
 
 # ===== CONFIG =====
 BOT_TOKEN = "8493592743:AAF4br9f4MhKsTqBvs8GE8GN2xkmSSRwLSU"
-OWNER_ID = 6681431665
+OWNER_ID = 8493592743
 
 BOOKINGS = []
 
