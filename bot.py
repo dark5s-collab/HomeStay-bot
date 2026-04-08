@@ -34,7 +34,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower().strip()
 
-    if "name" not in context.user_data:
+    if "name" not in context.user_data and "done" not in context.user_data:
         if len(text) < 3:
             await update.message.reply_text("❌ Enter valid name")
         else:
@@ -106,7 +106,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
             await update.message.reply_text("✅ Booking sent successfully")
-            context.user_data.clear()
+context.user_data["done"] = True   # ✅ HERE
 
         else:
             await update.message.reply_text("❌ Answer yes or no")
