@@ -2,8 +2,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
 # ===== CONFIG =====
-BOT_TOKEN = "8493592743:AAF4br9f4MhKsTqBvs8GE8GN2xkmSSRwLSU"
-OWNER_ID = 8493592743
+BOT_TOKEN = "YOUR_BOT_TOKEN"
+OWNER_ID = 6681431665
 
 BOOKINGS = []
 
@@ -34,7 +34,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
 
-    # STEP 1: NAME
     if "name" not in context.user_data:
         if len(text) < 3:
             await update.message.reply_text("❌ Enter valid name")
@@ -42,7 +41,6 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data["name"] = text
             await update.message.reply_text("📱 Enter your Phone Number")
 
-    # STEP 2: PHONE
     elif "phone" not in context.user_data:
         if text.isdigit() and len(text) == 10:
             context.user_data["phone"] = text
@@ -50,17 +48,14 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("❌ Enter valid 10-digit phone number")
 
-    # STEP 3: CHECK-IN
     elif "checkin" not in context.user_data:
         context.user_data["checkin"] = text
         await update.message.reply_text("📅 Enter Check-out Date")
 
-    # STEP 4: CHECK-OUT
     elif "checkout" not in context.user_data:
         context.user_data["checkout"] = text
         await update.message.reply_text("👥 Enter number of members")
 
-    # STEP 5: MEMBERS
     elif "members" not in context.user_data:
         if text.isdigit():
             context.user_data["members"] = text
@@ -68,7 +63,6 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("❌ Enter number only")
 
-    # STEP 6: TYPE
     elif "type" not in context.user_data:
         if "family" in text or "bachelor" in text:
             context.user_data["type"] = text
@@ -76,189 +70,158 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("❌ Type Family or Bachelors")
 
-    # STEP 7: AC
-elif "ac" not in context.user_data:
-    if "yes" in text or "no" in text:
-        context.user_data["ac"] = text
+    elif "ac" not in context.user_data:
+        if "yes" in text or "no" in text:
+            context.user_data["ac"] = text
 
-        data = context.user_data
-        booking_id = len(BOOKINGS) + 1
-        data["id"] = booking_id
-        BOOKINGS.append(data.copy())
+            data = context.user_data
+            booking_id = len(BOOKINGS) + 1
+            data["id"] = booking_id
+            BOOKINGS.append(data.copy())
 
-        keyboard = [
-            [
-                InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{booking_id}"),
-                InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{booking_id}")
-            ],
-            [
-                InlineKeyboardButton("📞 Call", callback_data="call_owner")
+            keyboard = [
+                [
+                    InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{booking_id}"),
+                    InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{booking_id}")
+                ],
+                [
+                    InlineKeyboardButton("📞 Call", callback_data="call_owner")
+                ]
             ]
-        ]
 
-        reply_markup = InlineKeyboardMarkup(keyboard)
+            reply_markup = InlineKeyboardMarkup(keyboard)
 
-        await context.bot.send_message(
-            chat_id=OWNER_ID,
-            text=(
-                "🚨🚨 NEW BOOKING ALERT 🚨🚨\n\n"
-                f"🆔 ID: {data['id']}\n"
-                f"👤 {data['name']}\n"
-                f"📅 {data['checkin']} → {data['checkout']}\n"
-                f"👥 {data['members']} Members\n"
-                f"👪 {data['type']}\n"
-                f"❄️ AC: {data['ac']}\n\n"
-                "⚠️ Choose action 👇"
-            ),
-            reply_markup=reply_markup
-        )
+            await context.bot.send_message(
+                chat_id=OWNER_ID,
+                text=(
+                    "🚨 NEW BOOKING\n\n"
+                    f"ID: {data['id']}\n"
+                    f"{data['name']}\n"
+                    f"{data['checkin']} → {data['checkout']}\n"
+                    f"{data['members']} Members\n"
+                    f"{data['type']}\n"
+                    f"AC: {data['ac']}"
+                ),
+                reply_markup=reply_markup
+            )
 
-        await update.message.reply_text(
-            "✅ Booking Request Received!\n"
-            f"🆔 ID: {data['id']}\n"
-        )
+            await update.message.reply_text("✅ Booking sent successfully")
 
-    else:
-        await update.message.reply_text("❌ Answer yes or no")
+            context.user_data.clear()
+
+        else:
+            await update.message.reply_text("❌ Answer yes or no")
+
     # ===== AFTER FLOW =====
     else:
-        if "location" in text or "where" in text:
+        if "location" in text:
             await update.message.reply_text("📍 Tirupati (3-4 KM from railway station)")
 
-        elif "price" in text or "cost" in text or "rate" in text:
-            await update.message.reply_text("📍 Tirupati (3-4 KM from railway station)")
+        elif "price" in text:
+            await update.message.reply_text("💰 Price depends on availability")
 
-        elif "near tirumala" in text:
-            await update.message.reply_text("Yes, very close to Tirumala")
-
-        elif "quiet area" in text:
-            await update.message.reply_text("Yes, the area is quiet and safe")
-
-        elif "road access" in text:
-            await update.message.reply_text("Yes, easily accessible by road")
-
-        elif "shops nearby" in text:
-            await update.message.reply_text("Yes, grocery stores and restaurants are nearby")
-
-        elif "public transport" in text:
-            await update.message.reply_text("Public transport is very easy to find nearby")
-
-        elif "easy to find" in text:
-            await update.message.reply_text("Yes, homestay is easy to locate with landmarks")
-
-        elif "parking outside" in text:
-            await update.message.reply_text("Yes, parking is available near the homestay")
-
-        elif "security" in text:
-            await update.message.reply_text("Don't know about security")
-
-        elif "night access" in text:
-            await update.message.reply_text("Don't know if safe at night")
-
-        elif "homestay neat" in text or "clean" in text:
-            await update.message.reply_text("🧼 Rooms are very clean and neat")
-
-        elif "rooms clean" in text:
-            await update.message.reply_text("Yes, rooms are clean and tidy")
-
-        elif "bathroom clean" in text:
-            await update.message.reply_text("Yes, bathrooms are clean and hygienic")
+        elif "parking" in text:
+            await update.message.reply_text("🚗 Parking available")
 
         elif "wifi" in text:
-            await update.message.reply_text("Depends on the homestay, WiFi availability may vary")
+            await update.message.reply_text("📶 WiFi may be available")
 
         elif "geyser" in text:
             await update.message.reply_text("🔥 24/7 hot water available")
 
-        elif "cooking" in text:
-            await update.message.reply_text("Induction stove is available for cooking")
+        elif "payment" in text:
+            await update.message.reply_text("📲 GPay / PhonePe / Cash")
 
-        elif "drinking water" in text or "water" in text:
-            await update.message.reply_text("💧 RO filtered drinking water is available")
+        # ===== EXTRA 30 ELIF =====
 
-        elif "dining clean" in text:
-            await update.message.reply_text("Yes, dining tables and chairs are clean")
+        elif "advance booking" in text:
+            await update.message.reply_text("Advance booking is required ₹500/-")
 
-        elif "breakfast" in text or "lunch" in text or "dinner" in text or "food" in text:
-            await update.message.reply_text("🍽️ Kitchen available; food not included")
+        elif "booking number" in text:
+            await update.message.reply_text("📞 8121451238")
 
-        elif "fans" in text:
-            await update.message.reply_text("Yes, fans are available in all rooms")
+        elif "phonepe" in text:
+            await update.message.reply_text("Our agent will give you soon")
 
-        elif "ac" in text:
-            await update.message.reply_text("Yes, AC is available if AC room is booked")
-
-        elif "bed sheets" in text:
-            await update.message.reply_text("Yes, bed sheets are clean and changed regularly")
-
-        elif "towels" in text:
-            await update.message.reply_text("No, towels are not provided")
-
-        elif "garden" in text:
-            await update.message.reply_text("No, there is no garden or outdoor space")
-
-        elif "balcony" in text:
-            await update.message.reply_text("No, there is no balcony or terrace")
-
-        elif "pets" in text:
-            await update.message.reply_text("No, pets are not allowed")
-
-        elif "smoking" in text:
-            await update.message.reply_text("Smoking is not allowed")
-
-        elif "parking inside" in text or "parking" in text:
-            await update.message.reply_text("🚗 Parking inside the homestay compound is available")
-
-        elif "payment methods" in text:
-            await update.message.reply_text("Payment can be made via Cash, UPI, or Paytm")
-
-        elif "advance payment" in text or "advance" in text:
-            await update.message.reply_text("Advance payment of ₹1000 is required")
-
-        elif "refund" in text:
-            await update.message.reply_text("Refund policy depends on the homestay rules")
+        elif "gpay" in text:
+            await update.message.reply_text("Our agent will give you soon")
 
         elif "upi" in text:
-            await update.message.reply_text("You can pay via UPI using PhonePe or Google Pay")
+            await update.message.reply_text("UPI available for Our agent will give you soon")
 
-        elif "cash payment" in text:
-            await update.message.reply_text("Cash payment is accepted at check-in")
+        elif "rooms available" in text:
+            await update.message.reply_text("Our agent will tell you soon")
 
-        elif "partial payment" in text:
-            await update.message.reply_text("Partial payment is accepted if agreed with the homestay")
+        elif "rooms left" in text:
+            await update.message.reply_text("Few rooms left")
 
-        elif "online payment" in text:
-            await update.message.reply_text("Online payment via UPI or bank transfer is accepted")
+        elif "checkin time" in text:
+            await update.message.reply_text("Check-in and check-out is based on 24 hours")
 
-        elif "payment confirmation" in text:
-            await update.message.reply_text("Payment confirmation will be provided immediately after payment")
+        elif "checkout time" in text:
+            await update.message.reply_text("Check-out and check-in is based on 24 hours")
 
-        elif "no advance" in text:
-            await update.message.reply_text("Advance payment of ₹1000 is required; rest can be paid on arrival")
+        elif "early checkin" in text:
+            await update.message.reply_text("Depends on availability")
 
-        elif "payment help" in text or "book" in text:
-            await update.message.reply_text("For payment assistance, contact the homestay directly")
+        elif "late checkout" in text:
+            await update.message.reply_text("Extra charges may apply")
+
+        elif "extra bed" in text:
+            await update.message.reply_text("Extra bed available")
+
+        elif "lift" in text:
+            await update.message.reply_text("No lift available")
+
+        elif "clean" in text:
+            await update.message.reply_text("Rooms are clean")
+
+        elif "distance" in text:
+            await update.message.reply_text("3-4 KM from station")
+
+        elif "Tirumala" and "near" in text:
+            await update.message.reply_text("Near to Tirumala")
+
+        elif "bus stand" in text:
+            await update.message.reply_text("Near bus stand")
+
+        elif "temple distance" in text:
+            await update.message.reply_text("Close to temple")
+
+        elif "hot water" in text:
+            await update.message.reply_text("24/7 hot water")
+
+        elif "power backup" in text:
+            await update.message.reply_text("Power backup not available")
+
+        elif "electricity" in text:
+            await update.message.reply_text("24/7 electricity")
+
+        elif "cleaning" in text:
+            await update.message.reply_text("Rooms cleaned daily")
+
+        elif "staff" in text:
+            await update.message.reply_text("Staff available")
+
+        elif "neat" in text:
+            await update.message.reply_text("Yes,the rooms are neat")
+
+        elif "clean" and "neat" in text:
+            await update.message.reply_text("Yes,the rooms are clean and neat")
+
+        elif "food" in text:
+            await update.message.reply_text("food is not available but if you want kitchen is available")
+
+        elif "water" in text:
+            await update.message.reply_text("Yes,the RO drinking water is available")
 
         else:
-            await update.message.reply_text("🤖 Ask me about: price, location, rooms, AC, WiFi, geyser, parking, food, payment")
-
-# ===== DATA =====
-async def data(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("❌ Not authorized")
-        return
-
-    msg = "📊 BOOKINGS:\n\n"
-    for i, b in enumerate(BOOKINGS, 1):
-        msg += f"{i}. ID:{b['id']} | {b['name']} | AC:{b['ac']}\n"
-
-    await update.message.reply_text(msg)
+            await update.message.reply_text("🤖 Ask something relevant")
 
 # ===== RUN =====
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("data", data))
 app.add_handler(CallbackQueryHandler(button_handler))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))
 
