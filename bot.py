@@ -3,7 +3,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Cal
 
 # ===== CONFIG =====
 BOT_TOKEN = "8493592743:AAF4br9f4MhKsTqBvs8GE8GN2xkmSSRwLSU"
-OWNER_ID = 8493592743
+OWNER_ID = 6681431665
 
 BOOKINGS = []
 
@@ -32,7 +32,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ===== MAIN =====
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text.lower()
+    text = update.message.text.lower().strip()
 
     if "name" not in context.user_data:
         if len(text) < 3:
@@ -71,8 +71,8 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("❌ Type Family or Bachelors")
 
     elif "ac" not in context.user_data:
-        if "yes" in text or "no" in text:
-            context.user_data["ac"] = text
+        if text in ["yes", "no", "y", "n"]:
+            context.user_data["ac"] = "yes" if text in ["yes", "y"] else "no"
 
             data = context.user_data
             booking_id = len(BOOKINGS) + 1
@@ -106,7 +106,6 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
             await update.message.reply_text("✅ Booking sent successfully")
-
             context.user_data.clear()
 
         else:
@@ -132,8 +131,6 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif "payment" in text:
             await update.message.reply_text("📲 GPay / PhonePe / Cash")
 
-        # ===== EXTRA 30 ELIF =====
-
         elif "advance booking" in text:
             await update.message.reply_text("Advance booking is required ₹500/-")
 
@@ -147,7 +144,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Our agent will give you soon")
 
         elif "upi" in text:
-            await update.message.reply_text("UPI available for Our agent will give you soon")
+            await update.message.reply_text("UPI available, agent will provide details")
 
         elif "rooms available" in text:
             await update.message.reply_text("Our agent will tell you soon")
@@ -173,13 +170,16 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif "lift" in text:
             await update.message.reply_text("No lift available")
 
+        elif "clean" in text and "neat" in text:
+            await update.message.reply_text("Yes, the rooms are clean and neat")
+
         elif "clean" in text:
             await update.message.reply_text("Rooms are clean")
 
         elif "distance" in text:
             await update.message.reply_text("3-4 KM from station")
 
-        elif "Tirumala" and "near" in text:
+        elif "tirumala" in text and "near" in text:
             await update.message.reply_text("Near to Tirumala")
 
         elif "bus stand" in text:
@@ -204,16 +204,13 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Staff available")
 
         elif "neat" in text:
-            await update.message.reply_text("Yes,the rooms are neat")
-
-        elif "clean" and "neat" in text:
-            await update.message.reply_text("Yes,the rooms are clean and neat")
+            await update.message.reply_text("Yes, the rooms are neat")
 
         elif "food" in text:
-            await update.message.reply_text("food is not available but if you want kitchen is available")
+            await update.message.reply_text("Food not available, kitchen available if needed")
 
         elif "water" in text:
-            await update.message.reply_text("Yes,the RO drinking water is available")
+            await update.message.reply_text("RO drinking water available")
 
         else:
             await update.message.reply_text("🤖 Ask something relevant")
