@@ -110,116 +110,75 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
 
                 await update.message.reply_text("✅ Booking sent successfully")
-
                 context.user_data["done"] = True
 
             else:
                 await update.message.reply_text("❌ Answer yes or no")
 
-    # ===== ALL YOUR ELIFS (UNCHANGED BUT FIXED POSITION) =====
+    # ===== SMART + ELIF COMBINED SYSTEM =====
     else:
 
-        if "location" in text:
+        words = text.split()
+
+        ask_price = any(w in words for w in ["price","cost","rent","charge"])
+        ask_location = any(w in words for w in ["location","where","address","place"])
+        ask_time = any(w in words for w in ["time","checkin","checkout"])
+        ask_availability = any(w in words for w in ["available","vacant","rooms","free"])
+        ask_payment = any(w in words for w in ["pay","payment","upi","gpay","phonepe"])
+        ask_facility = any(w in words for w in ["wifi","parking","food","water","lift","ac"])
+        ask_distance = any(w in words for w in ["distance","near","far"])
+        ask_quality = any(w in words for w in ["clean","neat","hygiene"])
+        ask_urgency = any(w in words for w in ["today","now","urgent","fast"])
+        ask_people = any(w in words for w in ["family","bachelor","friends"])
+
+        if ask_price:
+            if "ac" in words:
+                await update.message.reply_text("💰 AC rooms cost higher than Non-AC.")
+            else:
+                await update.message.reply_text("💰 Price depends on members & availability.")
+
+        elif ask_availability:
+            if ask_urgency:
+                await update.message.reply_text("⚡ Few rooms left today!")
+            else:
+                await update.message.reply_text("📊 Rooms available based on demand.")
+
+        elif ask_location:
             await update.message.reply_text("📍 Tirupati (3-4 KM from railway station)")
 
-        elif "price" in text:
-            await update.message.reply_text("💰 Price depends on availability")
+        elif ask_time:
+            await update.message.reply_text("🕒 24-hour check-in/check-out system.")
 
+        elif ask_payment:
+            await update.message.reply_text("📲 UPI / Cash accepted")
+
+        elif ask_facility:
+            await update.message.reply_text("🏨 AC / Parking / Water available")
+
+        elif ask_distance:
+            await update.message.reply_text("📍 3-4 KM from station")
+
+        elif ask_quality:
+            await update.message.reply_text("✨ Clean and neat rooms")
+
+        elif ask_people:
+            await update.message.reply_text("👨‍👩‍👧‍👦 Family & Bachelors allowed")
+
+        # ===== FALLBACK OLD RESPONSES =====
         elif "parking" in text:
             await update.message.reply_text("🚗 Parking available")
 
         elif "wifi" in text:
             await update.message.reply_text("📶 WiFi may be available")
 
-        elif "geyser" in text:
-            await update.message.reply_text("🔥 24/7 hot water available")
-
-        elif "payment" in text:
-            await update.message.reply_text("📲 GPay / PhonePe / Cash")
-
-        elif "advance booking" in text:
-            await update.message.reply_text("Advance booking is required ₹500/-")
-
-        elif "booking number" in text:
-            await update.message.reply_text("📞 8121451238")
-
-        elif "phonepe" in text:
-            await update.message.reply_text("Our agent will give you soon")
-
-        elif "gpay" in text:
-            await update.message.reply_text("Our agent will give you soon")
-
-        elif "upi" in text:
-            await update.message.reply_text("UPI available, agent will provide details")
-
-        elif "rooms available" in text:
-            await update.message.reply_text("Our agent will tell you soon")
-
-        elif "rooms left" in text:
-            await update.message.reply_text("Few rooms left")
-
-        elif "checkin time" in text:
-            await update.message.reply_text("Check-in and check-out is based on 24 hours")
-
-        elif "checkout time" in text:
-            await update.message.reply_text("Check-out and check-in is based on 24 hours")
-
-        elif "early checkin" in text:
-            await update.message.reply_text("Depends on availability")
-
-        elif "late checkout" in text:
-            await update.message.reply_text("Extra charges may apply")
-
-        elif "extra bed" in text:
-            await update.message.reply_text("Extra bed available")
-
-        elif "lift" in text:
-            await update.message.reply_text("No lift available")
-
-        elif "clean" in text and "neat" in text:
-            await update.message.reply_text("Yes, the rooms are clean and neat")
-
-        elif "clean" in text:
-            await update.message.reply_text("Rooms are clean")
-
-        elif "distance" in text:
-            await update.message.reply_text("3-4 KM from station")
-
-        elif "tirumala" in text and "near" in text:
-            await update.message.reply_text("Near to Tirumala")
-
-        elif "bus stand" in text:
-            await update.message.reply_text("Near bus stand")
-
-        elif "temple distance" in text:
-            await update.message.reply_text("Close to temple")
-
-        elif "hot water" in text:
-            await update.message.reply_text("24/7 hot water")
-
-        elif "power backup" in text:
-            await update.message.reply_text("Power backup not available")
-
-        elif "electricity" in text:
-            await update.message.reply_text("24/7 electricity")
-
-        elif "cleaning" in text:
-            await update.message.reply_text("Rooms cleaned daily")
-
-        elif "staff" in text:
-            await update.message.reply_text("Staff available")
-
-        elif "neat" in text:
-            await update.message.reply_text("Yes, the rooms are neat")
-
         elif "food" in text:
-            await update.message.reply_text("Food not available, kitchen available if needed")
+            await update.message.reply_text("Food not available, kitchen available")
 
         elif "water" in text:
             await update.message.reply_text("RO drinking water available")
 
         else:
-            await update.message.reply_text("🤖 Ask something relevant")
+            await update.message.reply_text("🤖 Ask something like price, location, rooms, etc.")
 
 # ===== RUN =====
 app = ApplicationBuilder().token(BOT_TOKEN).build()
